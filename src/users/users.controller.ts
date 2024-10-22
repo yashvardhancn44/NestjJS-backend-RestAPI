@@ -8,9 +8,13 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { UsersService } from './users.service';
 
 @Controller('users') // users route handling  http://localhost:3000/users
 export class UsersController {
+  constructor(private readonly usersService: UsersService) {}
+  // nestjs is doing the line -> const userServive = new UserService(); but if this instance is already created. then it will pull that service and bring it here and doesn't create a new one -> acheiving Singleton.
+
   /*
   GET /users
   GET /users/:id
@@ -32,27 +36,43 @@ export class UsersController {
 
   @Get() // GET /users  OR GET /users?role=value&age=48
   findAll(@Query('role') role?: 'INTERN' | 'ENGINEER' | 'ADMIN') {
-    return [];
+    return this.usersService.findAll(role);
   }
 
   @Get(':id') // GET /users/:id
   findOne(@Param('id') id: string) {
     // @param to identify the param as it comes in
-    return { id };
+    // all params are sent as strings, we cant change that.
+    return this.usersService.findOne(+id);
   }
 
   @Post() // POST /users
-  create(@Body() user: {}) {
-    return user;
+  create(
+    @Body()
+    user: {
+      name: string;
+      email: string;
+      role: 'INTERN' | 'ENGINEER' | 'ADMIN';
+    },
+  ) {
+    return this.usersService.create(user);
   }
 
   @Patch(':id') // PATCH /users/:id
-  update(@Param('id') id: string, @Body() userUpdate: {}) {
-    return { id, ...userUpdate };
+  update(
+    @Param('id') id: string,
+    @Body()
+    userUpdate: {
+      name?: string;
+      email?: string;
+      role?: 'INTERN' | 'ENGINEER' | 'ADMIN';
+    },
+  ) {
+    return this.usersService.update(+id, userUpdate);
   }
 
   @Delete(':id') // DELETE /users/:id
   delete(@Param('id') id: string) {
-    return { id };
+    return this.usersService.delete(+id);
   }
 }
